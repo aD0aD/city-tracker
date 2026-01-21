@@ -1,0 +1,47 @@
+{
+  "name": "city-tracker",
+  "version": "1.0.0",
+  "description": "记录与可视化你在中国去过的城市（地图 + 本地存储）",
+  "license": "MIT",
+  "private": false,
+  "keywords": [
+    "react",
+    "typescript",
+    "vite",
+    "echarts",
+    "map",
+    "city",
+    "tracker"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aD0aD/city-tracker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aD0aD/city-tracker/issues"
+  },
+  "homepage": "https://github.com/aD0aD/city-tracker#readme",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "echarts": "^5.4.3",
+    "echarts-for-react": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  }
+}
+
