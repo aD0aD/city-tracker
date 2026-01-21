@@ -300,27 +300,52 @@ export default function Map({ cityData, onCityClick, viewMode = 'city' }: MapPro
           type: 'map',
           map: 'china',
           geoIndex: 0,
-          data: cityData.length > 0 ? cityData.map(data => {
-            // 根据视图模式使用不同的名称
-            // 重要：地图数据中的省份名称是完整名称（如"北京市"、"河北省"），所以省级视图时直接使用完整名称
-            let mapName = data.city
-            
-            // 特殊处理：台湾省在地图数据中可能是"台湾"而不是"台湾省"
-            if (viewMode === 'province' && data.city === '台湾省') {
-              // 尝试两种名称，ECharts会自动匹配
-              mapName = '台湾' // 地图数据中可能是"台湾"
-            }
-            
-            const color = getCityColor(data.count, data.purpose)
-            console.log(`[地图渲染] ${viewMode}视图: ${data.city} -> ${mapName}, 颜色: ${color}, 次数: ${data.count}, 目的: ${data.purpose}`)
-            return {
-              name: mapName,
-              value: Math.min(data.count, 5), // 最多5次
-              itemStyle: {
-                color: color
+          data: cityData.length > 0
+            ? (() => {
+              // 省级视图里，ECharts 通过 name 与地图 feature 的 name 做 join。
+              // 各数据源对省份命名可能是“全称/简称”混用（尤其台湾），因此这里同时写入多个候选名称并去重。
+              const items: Array<{ name: string; value: number; itemStyle: { color: string } }> = []
+              const seen = new Set<string>()
+
+              for (const data of cityData) {
+                const value = Math.min(data.count, 5)
+                const color = getCityColor(data.count, data.purpose)
+
+                if (viewMode === 'province') {
+                  const candidates = new Set<string>()
+                  // 全称（如：台湾省）
+                  candidates.add(data.city)
+                  // 简称（如：台湾）
+                  candidates.add(getMapProvinceName(data.city))
+
+                  // 额外兼容：台湾可能在地图数据里出现“台湾/台湾省”两种
+                  if (data.city === '台湾省') candidates.add('台湾')
+                  if (data.city === '台湾') candidates.add('台湾省')
+
+                  for (const name of candidates) {
+                    if (!name || seen.has(name)) continue
+                    seen.add(name)
+                    items.push({ name, value, itemStyle: { color } })
+                  }
+                } else {
+                  // 市级视图：直接用城市名
+                  if (!seen.has(data.city)) {
+                    seen.add(data.city)
+                    items.push({ name: data.city, value, itemStyle: { color } })
+                  }
+                }
+
+                // 调试日志（保留原逻辑输出）
+                if (viewMode === 'province') {
+                  console.log(`[地图渲染] province视图: ${data.city}, 颜色: ${color}, 次数: ${data.count}, 目的: ${data.purpose}`)
+                } else {
+                  console.log(`[地图渲染] city视图: ${data.city}, 颜色: ${color}, 次数: ${data.count}, 目的: ${data.purpose}`)
+                }
               }
-            }
-          }) : [],
+
+              return items
+            })()
+            : [],
           emphasis: {
             itemStyle: {
               areaColor: '#389BB7'
